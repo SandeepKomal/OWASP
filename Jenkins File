@@ -1,0 +1,61 @@
+node('slave-1') {
+    def ACCOUNT_ID = "851271747310"
+    def REGION = "us-east-2"
+    def GIT_URL = "https://github.com/SandeepKomal/customer.git"
+    def IMAGE_NAME = "customer"
+    def IMAGE_TAG = "${currentBuild.number}"
+    def IMAGE_URI = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+    def TRIVY_REPORT = "trivy_report.txt"
+    def nvdapikey = "440268bb-ffbd-4e21-a04c-162de8014dac"
+    def nvdApiDelay = '2000'
+
+    try {
+        stage("Cloning git repository") {
+            git branch: 'main', credentialsId: 'git_credentials', url: GIT_URL
+        }
+
+        stage("compile") {
+            sh "mvn clean compile"
+        }
+
+        stage("Test Cases") {
+            sh "mvn test"
+        }
+
+        stage("Mvn Build") {
+            sh "mvn clean package"
+        }
+
+        stage('OWASP Dependency Check') {
+            dependencyCheck additionalArguments: "--nvdApiKey=${nvdapikey} --nvdApiDelay=${nvdApiDelay} --scan target/ --format ALL", odcInstallation: 'owasp'
+            // Move the reports to the target directory to make them accessible
+            sh 'mv dependency-check-report.html target/dependency-check-report.html'
+            sh 'mv dependency-check-report.xml target/dependency-check-report.xml'
+            dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+        }
+
+        stage('Publish OWASP Dependency Check Report') {
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'target',
+                reportFiles: 'dependency-check-report.html',
+                reportName: 'OWASP Dependency Check Report'
+            ])
+        }
+
+        stage('Email OWASP Dependency Check Report') {
+            emailext (
+                subject: 'OWASP Dependency Check Report',
+                body: 'Please find attached the OWASP Dependency Check report.',
+                to: 'sandeepkomalp@gmail.com',
+                attachLog: false,
+                attachmentsPattern: '**/target/dependency-check-report.html'
+            )
+        }
+
+    } finally {
+        echo "jenkins pipeline"
+    }
+}
