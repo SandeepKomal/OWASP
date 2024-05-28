@@ -43,6 +43,25 @@ Note: Before running the job, make sure you have already set up the desired OWAS
    ```
    java -jar dependency-check.jar --project <project-name> --scan <path-to-project>
    ```
+### Option 2: Downloading the git using wget and unzip
+
+1. Go to the [OWASP Dependency Check releases page](https://github.com/jeremylong/DependencyCheck/releases).
+2. Download the latest version of the standalone JAR file (`dependency-check.jar`).
+3. Ensure you have Java 8 or higher installed on your system.
+4. Run the tool using the following command:
+   ```
+  wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.2.0/dependency-check-9.2.0-release.zip
+   ```
+   ```
+   sudo yum install unzip
+   ```
+   ```
+   unzip dependency-check-9.2.0-release.zip
+   ```
+   ```
+   rm -rf dependency-check-9.2.0-release.zip
+   ```
+   
 
 ### Option 2: Using Package Managers
 
