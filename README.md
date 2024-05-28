@@ -49,17 +49,21 @@ Note: Before running the job, make sure you have already set up the desired OWAS
 2. Download the latest version of the standalone JAR file (`dependency-check.jar`).
 3. Ensure you have Java 8 or higher installed on your system.
 4. Run the tool using the following command:
+
    ```
-  wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.2.0/dependency-check-9.2.0-release.zip
+    wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.2.0/dependency-check-9.2.0-release.zip
    ```
+
    ```
-   sudo yum install unzip
+    sudo yum install unzip
    ```
+
    ```
-   unzip dependency-check-9.2.0-release.zip
+    unzip dependency-check-9.2.0-release.zip
    ```
+
    ```
-   rm -rf dependency-check-9.2.0-release.zip
+    rm -rf dependency-check-9.2.0-release.zip
    ```
    
 
