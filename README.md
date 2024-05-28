@@ -43,7 +43,7 @@ Note: Before running the job, make sure you have already set up the desired OWAS
    ```
    java -jar dependency-check.jar --project <project-name> --scan <path-to-project>
    ```
-### Option 2: Downloading the git using wget and unzip
+### Option 3: Downloading the git using wget and unzip
 
 1. Go to the [OWASP Dependency Check releases page](https://github.com/jeremylong/DependencyCheck/releases).
 2. Download the latest version of the standalone JAR file (`dependency-check.jar`).
