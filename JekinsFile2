@@ -1,0 +1,61 @@
+node('slave-1') {
+    def ACCOUNT_ID = "851271747310"
+    def REGION = "us-east-2"
+    def GIT_URL = "https://github.com/SandeepKomal/customer.git"
+    def IMAGE_NAME = "customer"
+    def IMAGE_TAG = "${currentBuild.number}"
+    def IMAGE_URI = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+    def TRIVY_REPORT = "trivy_report.txt"
+    def nvdapikey = "440268bb-ffbd-4e21-a04c-162de8014dac"
+    def nvdApiDelay = '2000'
+    // def TRIVY_REPORT = "trivy_report.txt"
+
+    try {
+        stage("Cloning git repository") {
+            git branch: 'main', credentialsId: 'git_credentials', url: GIT_URL
+        }
+        
+        stage("compile") {
+            sh "mvn clean compile"
+        }
+
+        stage("Test Cases") {
+            sh "mvn test"
+        }
+
+        stage("Mvn Build") {
+            sh "mvn clean package"
+        }
+
+        stage('OWASP Dependency Check') {
+            dependencyCheck additionalArguments: "--nvdApiKey=${nvdapikey} --nvdApiDelay=${nvdApiDelay} --project customer --scan pom.xml --format ALL", odcInstallation: 'owasp'
+            
+        
+            // Move the reports to a specific directory if needed
+            sh "mkdir -p reports"
+            sh "mv dependency-check-report.html reports/dependency-check-report.html"
+            sh "mv dependency-check-report.xml reports/dependency-check-report.xml"
+            
+            dependencyCheckPublisher pattern: 'reports/dependency-check-report.xml'
+        }
+
+        stage('Publish OWASP Dependency Check Report') {
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'reports',
+                reportFiles: 'dependency-check-report.html',
+                reportName: 'OWASP Dependency Check Report'
+            ])
+        }
+
+        stage('Email OWASP Dependency Check Report') {
+            emailext (
+                subject: 'OWASP Dependency Check Report',
+                body: 'Please find attached the OWASP Dependency Check report.',
+                to: 'sandeepkomalp@gmail.com',
+                attachLog: false,
+                attachmentsPattern: '**/reports/dependency-check-report.html'
+            )
+        }
